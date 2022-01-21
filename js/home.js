@@ -1,39 +1,48 @@
 import postApi from './api/postApi'
-import { setTextContent } from './utils'
+import { setTextContent, truncateText } from './utils'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
 
 function createPostElement(post) {
   if (!post) return
 
-  try {
-    // find and clone template
-    const postTemplate = document.getElementById('postTemplate')
-    if (!postTemplate) return
+  // find and clone template
+  const postTemplate = document.getElementById('postTemplate')
+  if (!postTemplate) return
 
-    const liElement = postTemplate.content.firstElementChild.cloneNode(true)
-    if (!liElement) return
+  const liElement = postTemplate.content.firstElementChild.cloneNode(true)
+  if (!liElement) return
 
-    // update title, description, author, thumbnail
-    // const titleElement = liElement.querySelector('[data-id="title"]')
-    // if (titleElement) titleElement.textContent = post.title
+  // update title, description, author, thumbnail
+  // const titleElement = liElement.querySelector('[data-id="title"]')
+  // if (titleElement) titleElement.textContent = post.title
 
-    setTextContent(liElement, '[data-id="title"]', post.title)
-    setTextContent(liElement, '[data-id="description"]', post.description)
-    setTextContent(liElement, '[data-id="title"]', post.title)
+  setTextContent(liElement, '[data-id="title"]', post.title)
+  setTextContent(liElement, '[data-id="description"]', truncateText(post.description, 100))
+  setTextContent(liElement, '[data-id="title"]', post.title)
 
-    // const descriptionElement = liElement.querySelector('[data-id="description"]')
-    // if (descriptionElement) descriptionElement.textContent = post.description
+  // calculate time span
+  setTextContent(liElement, '[data-id="timeSpan"]', ` - ${dayjs(post.updatedAt).fromNow()}`)
 
-    // const authorElement = liElement.querySelector('[data-id="author"]')
-    // if (authorElement) authorElement.textContent = post.author
+  // const descriptionElement = liElement.querySelector('[data-id="description"]')
+  // if (descriptionElement) descriptionElement.textContent = post.description
 
-    const thumbnailElement = liElement.querySelector('[data-id="thumbnail"]')
-    if (thumbnailElement) thumbnailElement.src = post.imageUrl
-    // attach events
+  // const authorElement = liElement.querySelector('[data-id="author"]')
+  // if (authorElement) authorElement.textContent = post.author
 
-    return liElement
-  } catch (error) {
-    console.log('failed to create post item', error)
+  const thumbnailElement = liElement.querySelector('[data-id="thumbnail"]')
+  if (thumbnailElement) {
+    thumbnailElement.src = post.imageUrl
+
+    thumbnailElement.addEventListener('error', () => {
+      thumbnailElement.src = 'https://via.placeholder.com/1368x400?text=Thumbnail'
+    })
   }
+  // attach events
+
+  return liElement
 }
 
 function renderPostList(postList) {
