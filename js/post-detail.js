@@ -1,19 +1,10 @@
 import dayjs from 'dayjs'
 import postApi from './api/postApi'
+import { registerLightBox } from './utils'
 import { setTextContent } from './utils/common'
-
-// id="goToEditPageLink"
-// id="postHeroImage"
-// id="postDetailTitle"
-// id="postDetailAuthor"
-// id="postDetailTimeSpan"
-// id="postDetailDescription"
 
 function renderPostDetail(post) {
   if (!post) return
-  // render title
-  // render description
-  // render updateAt
 
   setTextContent(document, '#postDetailTitle', post.title)
   setTextContent(document, '#postDetailDescription', post.description)
@@ -43,6 +34,8 @@ function renderPostDetail(post) {
 }
 
 ;(async () => {
+  registerLightBox()
+
   // get post id from url
   // fetch post detail API
   // render post detail
