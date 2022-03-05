@@ -1,4 +1,5 @@
 import { setBackgroundImage, setFieldValue, setTextContent } from './common'
+import * as yup from 'yup'
 
 function setFormValues(form, formValues) {
   setFieldValue(form, '[name="title"]', formValues?.title)
@@ -27,33 +28,80 @@ function getFormValues(form) {
   return formValues
 }
 
-function getTitleError(form) {
-  const titleElement = form.querySelector('[name="title"]')
-  if (!titleElement) return
+// function getTitleError(form) {
+//   const titleElement = form.querySelector('[name="title"]')
+//   if (!titleElement) return
 
-  // required
-  if (titleElement.validity.valueMissing) return 'Please enter title.'
+//   // required
+//   if (titleElement.validity.valueMissing) return 'Please enter title.'
 
-  // at least two words
-  if (titleElement.value.split(' ').filter((x) => !!x && x.length >= 3).length < 2) {
-    return 'Please enter at least two words of 3 characters'
-  }
+//   // at least two words
+//   if (titleElement.value.split(' ').filter((x) => !!x && x.length >= 3).length < 2) {
+//     return 'Please enter at least two words of 3 characters'
+//   }
 
-  return ''
+//   return ''
+// }
+
+function getPostSchema() {
+  return yup.object().shape({
+    title: yup.string().required('Please enter title'),
+    author: yup
+      .string()
+      .required('Please enter author name')
+      .test(
+        'at-least-two-words',
+        'Please enter at least two words',
+        (value) => value.split(' ').filter((x) => !!x && x.length >= 3).length >= 2
+      ),
+    description: yup.string(),
+  })
 }
 
-function validatePostForm(form, formValues) {
-  // get errors
-  const errors = {
-    title: getTitleError(form),
+function setFieldError(form, name, error) {
+  const element = form.querySelector(`[name="${name}"]`)
+  if (element) {
+    element.setCustomValidity(error)
+    setTextContent(element.parentElement, '.invalid-feedback', error)
   }
+}
 
-  // set errors
-  for (const key in errors) {
-    const element = form.querySelector(`[name="${key}"]`)
-    if (element) {
-      element.setCustomValidity(errors[key])
-      setTextContent(element.parentElement, '.invalid-feedback', errors[key])
+async function validatePostForm(form, formValues) {
+  // // get errors
+  // const errors = {
+  //   title: getTitleError(form),
+  // }
+
+  // // set errors
+  // for (const key in errors) {
+  //   const element = form.querySelector(`[name="${key}"]`)
+  //   if (element) {
+  //     element.setCustomValidity(errors[key])
+  //     setTextContent(element.parentElement, '.invalid-feedback', errors[key])
+  //   }
+  // }
+
+  try {
+    // reset previous errors
+    ;['title', 'author'].forEach((name) => setFieldError(form, name, ''))
+
+    const schema = getPostSchema()
+    await schema.validate(formValues, { abortEarly: false })
+  } catch (error) {
+    const errorLog = {}
+
+    if (error.name === 'ValidationError' && Array.isArray(error.inner)) {
+      for (const validationError of error.inner) {
+        const name = validationError.path
+
+        //ignore if the field is already logged
+        if (errorLog[name]) continue
+
+        // set field error and mark as logged
+        setFieldError(form, name, validationError.message)
+
+        errorLog[name] = true
+      }
     }
   }
 
