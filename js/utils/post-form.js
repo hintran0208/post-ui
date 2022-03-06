@@ -85,6 +85,7 @@ async function validatePostForm(form, formValues) {
     // reset previous errors
     ;['title', 'author'].forEach((name) => setFieldError(form, name, ''))
 
+    // start validating
     const schema = getPostSchema()
     await schema.validate(formValues, { abortEarly: false })
   } catch (error) {
@@ -118,17 +119,19 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
 
   setFormValues(form, defaultValues)
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault()
-    console.log('Submit')
 
     // get form values
     const formValues = getFormValues(form)
-    console.log(formValues)
+    formValues.id = defaultValues.id
 
     // validation
     // if valid trigger submit callback
     // otherwise, show validation errors
-    if (!validatePostForm(form, formValues)) return
+    const isValid = await validatePostForm(form, formValues)
+    if (!isValid) return
+
+    onSubmit?.(formValues)
   })
 }
