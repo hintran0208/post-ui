@@ -2,10 +2,11 @@ import postApi from './api/postApi'
 import { initPostForm, toast } from './utils'
 
 async function handlePostFormSubmit(formValues) {
-  console.log('submit from parent', formValues)
+  // console.log('submit from parent', formValues)
 
   try {
     // throw new Error('error form testing')
+
     // check add/edit mode
     // S1: based on search params (check id)
     // S2: check id in formValues
