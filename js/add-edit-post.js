@@ -15,15 +15,26 @@ function removeUnusedField(formValues) {
   // finally remove imageSource
   delete payload.imageSource
 
+  // remove id if it's add mode
+  if (!payload.id) delete payload.id
+
   return payload
 }
 
-async function handlePostFormSubmit(formValues) {
-  const payload = removeUnusedField(formValues)
-  console.log('submit from parent', { formValues, payload })
-  return
+function jsonToFormData(jsonObject) {
+  const formData = new FormData()
 
+  for (const key in jsonObject) {
+    formData.set(key, jsonObject[key])
+  }
+
+  return formData
+}
+
+async function handlePostFormSubmit(formValues) {
   try {
+    const payload = removeUnusedField(formValues)
+    const formData = jsonToFormData(payload)
     // throw new Error('error form testing')
 
     // check add/edit mode
@@ -39,8 +50,8 @@ async function handlePostFormSubmit(formValues) {
     // }
 
     const savedPost = formValues.id
-      ? await postApi.update(formValues)
-      : await postApi.add(formValues)
+      ? await postApi.updateFormData(formData)
+      : await postApi.addFormData(formData)
 
     // show success message
     toast.success('Save post successfully!')
