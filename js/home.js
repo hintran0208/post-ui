@@ -71,7 +71,7 @@ function registerPostDeleteEvent() {
     })
 
     initSearch({
-      elementId: 'search',
+      elementId: 'searchInput',
       defaultParams: queryParams,
       onChange: (value) => handleFilterChange('title_like', value),
     })
